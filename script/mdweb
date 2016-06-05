@@ -28,7 +28,10 @@ get '/*sub_dir', {sub_dir => ''} => sub {
   }
 };
 
-app->start;
+my @args = @ARGV;
+push @args, qw(--listen http://localhost:9009) if @args == 1 and $args[0] eq 'daemon';
+app->start(@args);
+
 __DATA__
 @@ reader.html.ep
 % layout 'default';
