@@ -1,7 +1,8 @@
 #!/usr/bin/env perl
 use Mojolicious::Lite;
 use File::HomeDir;
-use Mojo::Util 'slurp';
+use Mojo::Util     ();
+use Text::Markdown ();
 
 my $HOME = $ENV{MDWEB_HOME} || File::HomeDir->my_home || Cwd::getcwd;
 
@@ -15,7 +16,7 @@ get '/*sub_dir', {sub_dir => ''} => sub {
   $c->stash(title => $web_dir);
 
   if ($format eq 'md') {
-    $c->render(template => 'reader', markdown => slurp $fs_path);
+    $c->render(template => 'reader', markdown => read_md($fs_path));
   }
   elsif ($format eq 'text') {
     $c->render(text => slurp $fs_path);
@@ -27,6 +28,15 @@ get '/*sub_dir', {sub_dir => ''} => sub {
     $c->render(template => 'browser', web_dir => $web_dir, files => \@files);
   }
 };
+
+sub read_md {
+  my $md = Mojo::Util::slurp(shift);
+  $md =~ s!^(.+\|.*)!{
+    my $line = Mojo::DOM->new(Text::Markdown::markdown($1))->all_text;
+    "    $line";
+  }!gme;
+  return $md;
+}
 
 my @args = @ARGV;
 push @args, qw(--listen http://localhost:9009) if @args == 1 and $args[0] eq 'daemon';
