@@ -1,0 +1,87 @@
+#!/usr/bin/env perl
+use Mojolicious::Lite;
+use File::HomeDir;
+use Mojo::Util 'slurp';
+
+my $HOME = $ENV{MDWEB_HOME} || File::HomeDir->my_home || Cwd::getcwd;
+
+get '/*sub_dir', {sub_dir => ''} => sub {
+  my $c       = shift;
+  my $sub_dir = $c->stash('sub_dir');
+  my $format  = $sub_dir =~ /\.(\w+)$/ ? $1 : '';
+  my $web_dir = Mojo::Path->new($sub_dir)->trailing_slash(0)->canonicalize;
+  my $fs_path = File::Spec->catdir($HOME, split '/', $web_dir);
+
+  $c->stash(title => $web_dir);
+
+  if ($format eq 'md') {
+    $c->render(template => 'reader', markdown => slurp $fs_path);
+  }
+  elsif ($format eq 'text') {
+    $c->render(text => slurp $fs_path);
+  }
+  else {
+    opendir my $DH, $fs_path or die "opendir $fs_path: $!";
+    my @files
+      = grep { $_->[0] =~ /\.(markdown|md)$/i or $_->[1] } map { [$_, -d File::Spec->catdir($fs_path, $_) ? 1 : 0] } grep { !/^\./ } readdir $DH;
+    $c->render(template => 'browser', web_dir => $web_dir, files => \@files);
+  }
+};
+
+app->start;
+__DATA__
+@@ reader.html.ep
+% layout 'default';
+% use Text::Markdown 'markdown';
+<div class="markdown">
+  %== markdown $markdown
+</div>
+@@ browser.html.ep
+% layout 'default';
+<div class="browser">
+  <h1>File browser</h1>
+  <ul>
+    % for my $file (sort { $b->[1] <=> $a->[1] } @$files) {
+    <li><%= link_to $file->[0], "$web_dir/$file->[0]" %></li>
+    % }
+  </ul>
+</div>
+@@ layouts/default.html.ep
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <style type="text/css">
+      body {
+        color: #334455;
+        font-size: 16px;
+        font-family: 'Helvetica Neue', Helvetica, sans-serif;
+        font-weight: normal;
+        line-height: 1.5em;
+        margin: 0;
+      }
+      a {
+        color: #446677;
+        text-decoration: underline;
+      }
+      code {
+        background: #eee;
+        display: block;
+        padding: 0.5em;
+        margin: 1em -0.5em;
+        white-space: pre;
+      }
+      ul {
+        padding: 0;
+        list-style: none;
+      }
+      .browser, .markdown {
+        background: #fdfdfd;
+        padding: 2em;
+        max-width: 44em;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body><%= content %></body>
+</html>
