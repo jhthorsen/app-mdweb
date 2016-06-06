@@ -2,7 +2,7 @@
 use Mojolicious::Lite;
 use File::HomeDir;
 use Mojo::Util     ();
-use Text::Markdown ();
+use Text::MultiMarkdown ();
 
 my $HOME = $ENV{MDWEB_HOME} || File::HomeDir->my_home || Cwd::getcwd;
 
@@ -29,23 +29,20 @@ get '/*sub_dir', {sub_dir => ''} => sub {
   }
 };
 
-sub read_md {
-  my $md = Mojo::Util::slurp(shift);
-  $md =~ s!^(.+\|.*)!{
-    my $line = Mojo::DOM->new(Text::Markdown::markdown($1))->all_text;
-    "    $line";
-  }!gme;
-  return $md;
-}
-
 my @args = @ARGV;
 push @args, qw(--listen http://localhost:9009) if @args == 1 and $args[0] eq 'daemon';
 app->start(@args);
 
+sub read_md {
+  my $md = Mojo::Util::slurp(shift);
+  $md =~ s!(```)(\w+)([\n\r]+)(.*?)\1!<pre class="lang-$2">$4</pre>!sg;
+  $md;
+}
+
 __DATA__
 @@ reader.html.ep
 % layout 'default';
-% use Text::Markdown 'markdown';
+% use Text::MultiMarkdown 'markdown';
 <div class="markdown">
   %== markdown $markdown
 </div>
@@ -73,16 +70,14 @@ __DATA__
         line-height: 1.5em;
         margin: 0;
       }
-      a {
-        color: #446677;
-        text-decoration: underline;
-      }
-      code {
-        background: #eee;
-        display: block;
-        padding: 0.5em;
-        margin: 1em -0.5em;
-        white-space: pre;
+      a { color: #446677; text-decoration: underline; }
+      code, pre { background: #eee; }
+      code { padding: 1px; }
+      pre { padding: 0.5em; margin: 1em -0.5em; overflow: auto; }
+      table { width: 100%; }
+      th {
+        text-align: left;
+        border-bottom: 1px solid #ccc;
       }
       ul {
         padding: 0;
