@@ -10,7 +10,7 @@ get '/*sub_dir', {sub_dir => ''} => sub {
   my $c       = shift;
   my $sub_dir = $c->stash('sub_dir');
   my $format  = $sub_dir =~ /\.(\w+)$/ ? $1 : '';
-  my $web_dir = Mojo::Path->new($sub_dir)->trailing_slash(0)->canonicalize;
+  my $web_dir = Mojo::Path->new($sub_dir)->trailing_slash(1)->canonicalize;
   my $fs_path = File::Spec->catdir($HOME, split '/', $web_dir);
 
   $c->stash(title => $web_dir);
@@ -25,7 +25,8 @@ get '/*sub_dir', {sub_dir => ''} => sub {
     opendir my $DH, $fs_path or die "opendir $fs_path: $!";
     my @files
       = grep { $_->[0] =~ /\.(markdown|md)$/i or $_->[1] } map { [$_, -d File::Spec->catdir($fs_path, $_) ? 1 : 0] } grep { !/^\./ } readdir $DH;
-    $c->render(template => 'browser', web_dir => $web_dir, files => \@files);
+		say $web_dir;
+    $c->render(template => 'browser', web_dir => $web_dir->to_abs_string, files => \@files);
   }
 };
 
@@ -52,7 +53,7 @@ __DATA__
   <h1>File browser</h1>
   <ul>
     % for my $file (sort { $b->[1] <=> $a->[1] } @$files) {
-    <li><%= link_to $file->[0], "$web_dir/$file->[0]" %></li>
+    <li><%= link_to $file->[0], "$web_dir$file->[0]" %></li>
     % }
   </ul>
 </div>
