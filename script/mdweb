@@ -25,7 +25,6 @@ get '/*sub_dir', {sub_dir => ''} => sub {
     opendir my $DH, $fs_path or die "opendir $fs_path: $!";
     my @files
       = grep { $_->[0] =~ /\.(markdown|md)$/i or $_->[1] } map { [$_, -d File::Spec->catdir($fs_path, $_) ? 1 : 0] } grep { !/^\./ } readdir $DH;
-		say $web_dir;
     $c->render(template => 'browser', web_dir => $web_dir->to_abs_string, files => \@files);
   }
 };
