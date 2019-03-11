@@ -1,6 +1,8 @@
 #!/usr/bin/env perl
 use Mojolicious::Lite;
-use Mojo::Util     ();
+
+use Mojo::File 'path';
+use Mojo::Util 'decode';
 use Text::MultiMarkdown ();
 
 my $HOME = $ENV{MDWEB_HOME} || Cwd::getcwd;
@@ -10,20 +12,20 @@ get '/*sub_dir', {sub_dir => ''} => sub {
   my $sub_dir = $c->stash('sub_dir');
   my $format  = $sub_dir =~ /\.(\w+)$/ ? $1 : '';
   my $web_dir = Mojo::Path->new($sub_dir)->trailing_slash(1)->canonicalize;
-  my $fs_path = File::Spec->catdir($HOME, split '/', $web_dir);
+  my $fs_path = path($HOME, split '/', $web_dir);
 
   $c->stash(title => $web_dir);
 
   if ($format eq 'md') {
-    $c->render(template => 'reader', markdown => read_md($fs_path));
+    $c->render(template => 'reader', markdown => decode('UTF-8', read_md($fs_path)));
   }
   elsif ($format eq 'text') {
-    $c->render(text => slurp $fs_path);
+    $c->render(text => $fs_path->slurp);
   }
   else {
     opendir my $DH, $fs_path or die "opendir $fs_path: $!";
-    my @files
-      = grep { $_->[0] =~ /\.(markdown|md)$/i or $_->[1] } map { [$_, -d File::Spec->catdir($fs_path, $_) ? 1 : 0] } grep { !/^\./ } readdir $DH;
+    my @files = grep { $_->[0] =~ /\.(markdown|md)$/i or $_->[1] }
+      map { [$_, -d path($fs_path, $_) ? 1 : 0] } grep { !/^\./ } readdir $DH;
     $c->render(template => 'browser', web_dir => $web_dir->to_abs_string, files => \@files);
   }
 };
@@ -33,7 +35,7 @@ push @args, qw(--listen http://localhost:9009) if @args == 1 and $args[0] eq 'da
 app->start(@args);
 
 sub read_md {
-  my $md = Mojo::Util::slurp(shift);
+  my $md = shift->slurp;
   $md =~ s!(```)(\w+)([\n\r]+)(.*?)\1!<pre class="lang-$2">$4</pre>!sg;
   $md;
 }
