@@ -1,10 +1,9 @@
 #!/usr/bin/env perl
 use Mojolicious::Lite;
-use File::HomeDir;
 use Mojo::Util     ();
 use Text::MultiMarkdown ();
 
-my $HOME = $ENV{MDWEB_HOME} || File::HomeDir->my_home || Cwd::getcwd;
+my $HOME = $ENV{MDWEB_HOME} || Cwd::getcwd;
 
 get '/*sub_dir', {sub_dir => ''} => sub {
   my $c       = shift;

@@ -1,4 +1,7 @@
 Revision history for perl distribution App-mdweb
 
-0.01 Not Released
+0.02 Not Released
+ - Will serve files from current directory
+
+0.01 2019-03-11T10:18:55+0800
  - Started project
