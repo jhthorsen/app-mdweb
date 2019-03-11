@@ -16,7 +16,7 @@ get '/*sub_dir', {sub_dir => ''} => sub {
 
   $c->stash(title => $web_dir);
 
-  if ($format eq 'md') {
+  if ($format eq 'md' || $format eq 'markdown') {
     $c->render(template => 'reader', markdown => decode('UTF-8', read_md($fs_path)));
   }
   elsif ($format eq 'text') {
