@@ -100,9 +100,12 @@ __DATA__
         text-align: left;
         border-bottom: 1px solid #ccc;
       }
+      td {
+        vertical-align: top;
+      }
       ul {
-        padding: 0;
-        list-style: none;
+        margin: 1rem 0;
+        padding-left: 1.5rem;
       }
       dl {
         margin: 1rem 0;
