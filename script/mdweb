@@ -78,6 +78,12 @@ __DATA__
       a { color: #446677; text-decoration: underline; }
       code, pre { background: #fafafa; }
       code { padding: 1px; }
+      li > code,
+      p > code {
+        font-weight: 600;
+        outline: 1px dotted #bbb;
+        outline-offset: 1px;
+      }
       pre {
         background-color: #f9f9f9;
         font-family: Consolas, Menlo, Monaco, Courier, monospace;
