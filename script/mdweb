@@ -76,6 +76,9 @@ __DATA__
         line-height: 1.5em;
       }
       a { color: #446677; text-decoration: underline; }
+      p {
+        margin: 1em 0;
+      }
       code, pre { background: #fafafa; }
       code { padding: 1px; }
       li > code,
@@ -95,12 +98,19 @@ __DATA__
         padding: 1em;
       }
       h1, h2, h3 {
+        color: #000;
         margin: 1em 0;
+        margin-top: 2em;
         padding: 0;
+        font-weight: 500;
       }
-      h1 { font-size: 2rem }
-      h2 { font-size: 1.6rem }
-      h3 { font-size: 1.2rem }
+      h1 code, h2 code, h3 code {
+        color: #555;
+        font-style: italic;
+      }
+      h1 { font-size: 2.2rem }
+      h2 { font-size: 1.8rem }
+      h3 { font-size: 1.4rem }
       table { width: 100%; }
       th {
         text-align: left;
